@@ -11,6 +11,9 @@ module Partners
         params[:filterrific]
       ) || return
       @children = @filterrific.find
+
+      @children_items = flash[:children_items] || {}
+      @error_messages = flash[:error_messages]
     end
 
     def create
@@ -38,7 +41,10 @@ module Partners
       if create_service.errors.none?
         redirect_to partners_request_path(create_service.partner_request), notice: "Requested items successfully!"
       else
-        redirect_to new_partners_family_request_path, error: "Request failed! #{create_service.errors.map { |error| error.message.to_s }}}"
+        # Save the original request data in the flash to repopulate the form upon redirection
+        flash[:children_items] = children_items
+        flash[:error_messages] = create_service.errors.full_messages.join(", ")
+        redirect_to new_partners_family_request_path
       end
     end
   end

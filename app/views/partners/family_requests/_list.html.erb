@@ -1,3 +1,11 @@
+<% if @error_messages %>
+  <div class="alert alert-danger" role="alert">
+    <% @error_messages.each do |message| %>
+      <%= message %><br>
+    <% end %>
+  </div>
+<% end %>
+
 <table class='table table-striped'>
   <thead>
     <tr>
@@ -20,9 +28,10 @@
                 </td>
                 <td style="width: 200px;">
                   <div class="custom-control custom-switch form-switch">
-                    <%= check_box_tag "include_item_#{child.id}_#{item.id}", item.id, false,
-                                        class: "custom-control-input",
-                                        id: "include_item_#{child.id}_#{item.id}" %>
+                    <%= check_box_tag "children_items[#{child.id}][]", item.id,
+                                      @children_items.fetch(child.id.to_s, []).include?(item.id.to_s),
+                                      class: "custom-control-input",
+                                      id: "include_item_#{child.id}_#{item.id}" %>
                     <label class="custom-control-label" for="include_item_<%= child.id %>_<%= item.id %>">
                       Include this item for <%= child.first_name %>?
                     </label>

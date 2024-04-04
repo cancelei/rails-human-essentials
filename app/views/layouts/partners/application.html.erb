@@ -64,9 +64,11 @@
 
   <div class="content-wrapper">
     <% flash.each do |key, value| %>
+      <!-- Ensure value is a string and sanitized for HTML rendering -->
+      <% message = value.is_a?(Hash) ? value.to_s : sanitize(value, tags: %w(ul li)) %>
       <div class="<%= flash_class(key) %> alert-dismissible fade show" role="alert">
         <a href="#" class="close btn-close" data-bs-dismiss="alert" aria-label="Close" style="text-decoration: none;"><%= fa_icon('times') %></a>
-        <%= sanitize(value, tags: %w(ul li)) %>
+        <%= message.html_safe %> <!-- Now safely calling html_safe on a string -->
       </div>
     <% end %>
     <%= yield %>
