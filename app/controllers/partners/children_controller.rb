@@ -86,7 +86,8 @@ module Partners
         :last_name,
         :race,
         :archived,
-        child_lives_with: []
+        child_lives_with: [],
+        item_ids: []
       )
     end
 

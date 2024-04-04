@@ -59,7 +59,11 @@
                     <dd><%= @child.health_insurance %></dd>
 
                     <dt>Item needed:</dt>
-                    <dd><%= current_partner.organization.item_id_to_display_string_map[@child.item_needed_diaperid] %></dd>
+                    <ul>
+                      <% @child.items.each do |item| %>
+                        <li><%= item.name %></li> <!-- Assuming your item model has a 'name' attribute -->
+                      <% end %>
+                    </ul>
 
                     <dt>Comments:</dt>
                     <dd><%= @child.comments %></dd>

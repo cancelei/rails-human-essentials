@@ -17,9 +17,7 @@
               <%= form.text_field :last_name, class: "form-control" %>
 
               <%= form.label :item_needed, "Diaper/Item Used" %>
-              <%= form.select :item_needed_diaperid, @requestable_items,
-                              {include_blank: 'Select an item'},
-                              {class: 'form-control'} %>
+              <%= form.select :item_ids, @requestable_items, {}, { multiple: true, class: 'form-control' } %>
               <br>
 
               <%= form.input :date_of_birth, as: :date, start_year: 20.years.ago.year, end_year: Time.current.year, label: "Date of Birth" %>

@@ -14,20 +14,17 @@ module Partners
     end
 
     def create
-      children_ids = []
+      children_items = params[:children_items] || {} # Assuming this is how you structured the data
+      family_requests_attributes = []
 
-      params.each do |key, _|
-        is_child, id = key.split('-')
-        if is_child == 'child'
-          children_ids << id
+      children_items.each do |child_id, item_ids|
+        child = current_partner.children.active.find_by(id: child_id)
+        next unless child
+
+        item_ids.each do |item_id|
+          # Assuming each item can be requested once per child in a request
+          family_requests_attributes << { item_id: item_id, person_count: 1, child: child }
         end
-      end
-
-      children = current_partner.children.active.where(id: children_ids).where.not(item_needed_diaperid: [nil, 0])
-
-      children_grouped_by_item_id = children.group_by(&:item_needed_diaperid)
-      family_requests_attributes = children_grouped_by_item_id.map do |item_id, item_requested_children|
-        { item_id: item_id, person_count: item_requested_children.size, children: item_requested_children }
       end
 
       create_service = Partners::FamilyRequestCreateService.new(

@@ -1,42 +1,38 @@
 <table class='table table-striped'>
   <thead>
-  <tr>
-    <th>Guardian</th>
-    <th>Child</th>
-    <th>Item Needed</th>
-    <th>Include This Child?</th>
-  </tr>
+    <tr>
+      <th>Guardian</th>
+      <th>Child</th>
+      <th colspan="2">Items Needed</th>
+    </tr>
   </thead>
   <tbody class='fields'>
-  <% @children.each_with_index do |child, index| %>
-    <tr>
-      <td>
-        <%= child.family.guardian_first_name %>
-        <%= child.family.guardian_last_name %>
-      </td>
-      <td>
-        <%= child.first_name %> <%= child.last_name %>
-      </td>
-      <td>
-        <% if child.item_needed_diaperid %>
-          <%= current_partner.organization.item_id_to_display_string_map[child.item_needed_diaperid] %>
-        <% else %>
-          <%= "N/A" %>
-        <% end %>
-      </td>
-      <td>
-        <div class="custom-control custom-switch form-switch">
-          <% if child.item_needed_diaperid %>
-            <%= check_box_tag "child-#{child.id}", child.active, child.active,
-                              class: "custom-control-input",
-                              id: "child-#{child.id}" %>
-                            <label class="custom-control-label" for="child-<%= child.id %>">
-                              <span class="sr-only">Include This Child?</span>
-                            </label>
-          <% end %>
-        </div>
-      </td>
-    </tr>
-  <% end %>
+    <% @children.each_with_index do |child, index| %>
+      <tr>
+        <td><%= child.family.guardian_first_name %> <%= child.family.guardian_last_name %></td>
+        <td><%= child.first_name %> <%= child.last_name %></td>
+        <td colspan="2"> <!-- This colspan allows us to use the space for the 'Item Needed' column -->
+          <table class="table">
+            <% child.items.each do |item| %>
+              <tr>
+                <td>
+                  <%= item.name %>
+                </td>
+                <td style="width: 200px;">
+                  <div class="custom-control custom-switch form-switch">
+                    <%= check_box_tag "include_item_#{child.id}_#{item.id}", item.id, false,
+                                        class: "custom-control-input",
+                                        id: "include_item_#{child.id}_#{item.id}" %>
+                    <label class="custom-control-label" for="include_item_<%= child.id %>_<%= item.id %>">
+                      Include this item for <%= child.first_name %>?
+                    </label>
+                  </div>
+                </td>
+              </tr>
+            <% end %>
+          </table>
+        </td>
+      </tr>
+    <% end %>
   </tbody>
 </table>

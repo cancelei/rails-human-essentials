@@ -25,6 +25,8 @@ module Partners
     serialize :child_lives_with, Array
     belongs_to :family
     has_many :child_item_requests, dependent: :destroy
+    has_many :children_items, class_name: 'Partners::ChildrenItem', dependent: :destroy
+    has_many :items, through: :children_items
 
     include Filterable
     include Exportable
@@ -114,4 +116,3 @@ module Partners
     end
   end
 end
-

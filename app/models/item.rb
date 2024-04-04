@@ -46,6 +46,8 @@ class Item < ApplicationRecord
   has_many :storage_locations, through: :inventory_items
   has_many :donations, through: :line_items, source: :itemizable, source_type: "::Donation"
   has_many :distributions, through: :line_items, source: :itemizable, source_type: "::Distribution"
+  has_many :children_items, class_name: "Partners::ChildrenItem", dependent: :destroy
+  has_many :children, through: :children_items, source: :child
 
   scope :active, -> { where(active: true) }
 
