@@ -278,49 +278,42 @@ note = [
   end
 
   families.each do |family|
+    # Create an authorized family member
     Partners::AuthorizedFamilyMember.create!(
       first_name: Faker::Name.first_name,
       last_name: Faker::Name.last_name,
-      date_of_birth: Faker::Date.birthday(min_age: 18, max_age: 100),
+      date_of_birth: Faker::Date.birthday(min_age: 18, max_age: 65),
       gender: Faker::Gender.binary_type,
       comments: Faker::Lorem.paragraph,
       family: family
     )
 
-    family.home_child_count.times do
-      Partners::Child.create!(
-        family: family,
-        first_name: family.guardian_first_name,
-        last_name: family.guardian_last_name,
-        date_of_birth: Faker::Date.birthday(min_age: 5, max_age: 18),
-        gender: Faker::Gender.binary_type,
-        child_lives_with: Partners::Child::CAN_LIVE_WITH.sample(2),
-        race: Partners::Child::RACES.sample,
-        agency_child_id: family.case_manager + family.guardian_last_name + family.guardian_first_name,
-        health_insurance: family.guardian_health_insurance,
-        comments: Faker::Lorem.paragraph,
-        active: Faker::Boolean.boolean,
-        archived: false,
-        item_needed_diaperid: p.organization.item_id_to_display_string_map.key(Partners::Child::CHILD_ITEMS.sample)
-      )
-    end
+    total_children = family.home_child_count + family.home_young_child_count
 
-    family.home_young_child_count.times do
-      Partners::Child.create!(
+    total_children.times do |index|
+      child_age = index < family.home_child_count ? (5..18).to_a.sample : (0..4).to_a.sample
+      child = Partners::Child.create!(
         family: family,
-        first_name: family.guardian_first_name,
+        first_name: Faker::Name.first_name,
         last_name: family.guardian_last_name,
-        date_of_birth: Faker::Date.birthday(min_age: 0, max_age: 5),
+        date_of_birth: Faker::Date.birthday(min_age: child_age, max_age: child_age),
         gender: Faker::Gender.binary_type,
-        child_lives_with: Partners::Child::CAN_LIVE_WITH.sample(2),
+        child_lives_with: [Partners::Child::CAN_LIVE_WITH.sample],
         race: Partners::Child::RACES.sample,
-        agency_child_id: family.case_manager + family.guardian_last_name + family.guardian_first_name,
+        agency_child_id: "#{family.guardian_last_name}#{family.guardian_first_name}#{index}",
         health_insurance: family.guardian_health_insurance,
         comments: Faker::Lorem.paragraph,
-        active: Faker::Boolean.boolean,
+        active: true,
         archived: false,
-        item_needed_diaperid: p.organization.item_id_to_display_string_map.key(Partners::Child::CHILD_ITEMS.sample)
+        item_needed_diaperid: family.partner.organization.item_id_to_display_string_map.key(Partners::Child::CHILD_ITEMS.sample)
       )
+
+      # Associate 1 to 5 items with each child (Assuming a method to do so)
+      (1..5).to_a.sample.times do
+        item = family.partner.organization.items.sample
+        child.items << item
+        # If a child-items association doesn't exist, you'll need to manually create it or adjust this logic to fit your model's structure.
+      end
     end
   end
 
