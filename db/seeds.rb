@@ -287,7 +287,7 @@ note = [
       comments: Faker::Lorem.paragraph,
       family: family
     )
-
+    # Create random set of children associated with the families created before
     total_children = family.home_child_count + family.home_young_child_count
 
     total_children.times do |index|
@@ -308,11 +308,11 @@ note = [
         item_needed_diaperid: family.partner.organization.item_id_to_display_string_map.key(Partners::Child::CHILD_ITEMS.sample)
       )
 
-      # Associate 1 to 5 items with each child (Assuming a method to do so)
-      (1..5).to_a.sample.times do
-        item = family.partner.organization.items.sample
+      # Ensure 1 to 5 unique items are associated with each child
+      unique_items = family.partner.organization.items.sample(5).sample(rand(1..5))
+      unique_items.each do |item|
+        # Assuming a method to associate an item with a child exists, replace `<<` with that method if different
         child.items << item
-        # If a child-items association doesn't exist, you'll need to manually create it or adjust this logic to fit your model's structure.
       end
     end
   end
