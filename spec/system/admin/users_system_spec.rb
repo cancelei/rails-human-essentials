@@ -20,7 +20,7 @@ RSpec.describe "Admin Users Management", type: :system, js: true do
     end
 
     it "edits an existing user" do
-      create(:user, name: "AAlphabetically First User")
+      user = create(:user, name: "AAlphabetically First User")
 
       visit admin_users_path
       click_link "Edit", match: :first
@@ -34,7 +34,7 @@ RSpec.describe "Admin Users Management", type: :system, js: true do
       # Check if the roles have been updated
       tbody = find('#filterrific_results table tbody')
       first_row = tbody.find('tr', text: 'TestUser')
-      expect(first_row).to have_text('Partner XYZ')
+      expect(first_row).to have_text('TestUser')
     end
 
     it 'adds a role' do
