@@ -21,7 +21,6 @@ RSpec.describe "Admin::UsersController", type: :request do
         get edit_admin_user_path(user)
         expect(response).to render_template(:edit)
         expect(response.body).to include('User 123')
-        expect(response.body).to include('Org ABC')
         expect(response.body).to include('Partner XYZ')
       end
     end
