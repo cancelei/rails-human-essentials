@@ -1,7 +1,6 @@
 <table class="table">
   <thead>
     <tr>
-      <th>Organization</th>
       <th>Name</th>
       <th>Email</th>
       <th class="text-right">Actions</th>
@@ -10,7 +9,6 @@
   <tbody>
     <% @users.each do |user| %>
       <tr>
-        <td><%= user.organization&.name %></td>
         <td><%= user.display_name %></td>
         <td><%= user.email %></td>
         <td class="text-right">
