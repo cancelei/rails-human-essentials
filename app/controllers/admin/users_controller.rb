@@ -38,8 +38,8 @@ class Admin::UsersController < AdminController
 
   def create
     UserInviteService.invite(name: user_params[:name],
-                             email: user_params[:email],
-                             roles: [Role::ORG_USER])
+      email: user_params[:email],
+      roles: [Role::ORG_USER])
     flash[:notice] = "Created a new user!"
     redirect_to admin_users_path
   rescue => e

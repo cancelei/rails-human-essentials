@@ -2,17 +2,13 @@ require 'rails_helper'
 
 RSpec.describe "Admin::UsersController", type: :request do
   let(:organization) { create(:organization) }
-  let(:user) { create(:user, organization: organization) }
+  let(:user) { create(:user) }
   let(:organization_admin) { create(:organization_admin, organization: organization) }
-  let(:super_admin) { create(:super_admin, organization: organization) }
-
-  let(:default_params) do
-    { organization_name: organization.id }
-  end
+  let(:super_admin) { create(:super_admin) }
 
   let(:org) { create(:organization, name: 'Org ABC') }
   let(:partner) { create(:partner, name: 'Partner XYZ', organization: org) }
-  let(:user) { create(:user, organization: org, name: 'User 123') }
+  let(:user) { create(:user, name: 'User 123') }
 
   context "When logged in as a super admin" do
     before do
@@ -33,24 +29,18 @@ RSpec.describe "Admin::UsersController", type: :request do
     describe "PATCH #update" do
       context 'with no errors' do
         it "renders index template with a successful update flash message" do
-          patch admin_user_path(user), params: { user: default_params.merge(organization_id: user.organization.id,
-            name: 'New User 123', email: 'random@gmail.com') }
+          patch admin_user_path(user), params: { user: { name: 'New User 123', email: 'random@gmail.com' } }
           expect(response).to redirect_to admin_users_path
           expect(flash[:notice]).to eq("New User 123 updated!")
         end
       end
 
       context 'with errors' do
-        it "redirects back with no organization_id flash message" do
+        it "redirects back with error flash message" do
+          allow_any_instance_of(User).to receive(:update).and_return(false)
           patch admin_user_path(user), params: { user: { name: 'New User 123' } }
           expect(response).to redirect_to(edit_admin_user_path)
-          expect(flash[:error]).to eq('Please select an organization for the user.')
-        end
-
-        it "redirects back with no role found flash message" do
-          patch admin_user_path(user), params: { user: { name: 'New User 123', organization_id: -1 } }
-          expect(response).to redirect_to(edit_admin_user_path)
-          expect(flash[:error]).to eq('Error finding a role within the provided organization')
+          expect(flash[:error]).to eq("Something didn't work quite right -- try again?")
         end
       end
     end
@@ -120,22 +110,20 @@ RSpec.describe "Admin::UsersController", type: :request do
         get new_admin_user_path
         expect(response).to render_template(:new)
       end
-
-      it "preloads organizations" do
-        get new_admin_user_path
-        expect(assigns(:organizations)).to eq(Organization.all.alphabetized)
-      end
     end
 
     describe "POST #create" do
       it "returns http success" do
-        post admin_users_path, params: { user: { email: organization.email, organization_id: organization.id } }
+        post admin_users_path, params: { user: { email: 'newuser@example.com', name: 'New User' } }
         expect(response).to redirect_to(admin_users_path)
+        expect(flash[:notice]).to eq('Created a new user!')
       end
 
-      it "preloads organizations" do
-        post admin_users_path, params: { user: { organization_id: organization.id } }
-        expect(assigns(:organizations)).to eq(Organization.all.alphabetized)
+      it "shows flash error on failure" do
+        allow(UserInviteService).to receive(:invite).and_raise('Invite Error')
+        post admin_users_path, params: { user: { email: 'newuser@example.com', name: 'New User' } }
+        expect(response).to render_template(:new)
+        expect(flash[:error]).to eq('Failed to create user: Invite Error')
       end
     end
   end
@@ -155,7 +143,7 @@ RSpec.describe "Admin::UsersController", type: :request do
 
     describe "POST #create" do
       it "redirects" do
-        post admin_users_path, params: { user: { organization_id: organization.id } }
+        post admin_users_path, params: { user: { name: 'New User', email: 'newuser@example.com' } }
         expect(response).to redirect_to(dashboard_path)
       end
     end
@@ -176,7 +164,7 @@ RSpec.describe "Admin::UsersController", type: :request do
 
     describe "POST #create" do
       it "redirects" do
-        post admin_users_path, params: { user: { organization_id: organization.id } }
+        post admin_users_path, params: { user: { name: 'New User', email: 'newuser@example.com' } }
         expect(response).to redirect_to(dashboard_path)
       end
     end
