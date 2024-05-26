@@ -20,7 +20,7 @@ RSpec.describe "Admin Users Management", type: :system, js: true do
     end
 
     it "edits an existing user" do
-      user = create(:user, name: "AAlphabetically First User")
+      create(:user, name: "AAlphabetically First User")
 
       visit admin_users_path
       click_link "Edit", match: :first

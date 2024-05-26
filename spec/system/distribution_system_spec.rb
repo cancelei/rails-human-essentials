@@ -1,11 +1,13 @@
 RSpec.feature "Distributions", type: :system do
   let(:organization) { create(:organization) }
-  let(:user) { create(:user, organization: organization) }
+  let(:user) { create(:user) }
   let(:storage_location) { create(:storage_location, organization: organization) }
-  let(:organization_admin) { create(:organization_admin, organization: organization) }
+  let(:organization_admin) { create(:organization_admin) }
   let!(:partner) { create(:partner, organization: organization) }
 
   before do
+    user.add_role :organization_admin, organization
+    organization_admin.add_role :organization_admin, organization
     sign_in(user)
     setup_storage_location(storage_location)
   end
@@ -14,7 +16,7 @@ RSpec.feature "Distributions", type: :system do
     let(:issued_at) { Time.current.utc.change(hour: 19, minute: 0).to_datetime }
     before do
       item1 = create(:item, value_in_cents: 1050, organization: organization)
-      @distribution = create(:distribution, :with_items, item: item1, agency_rep: "A Person", organization: user.organization, issued_at: issued_at)
+      @distribution = create(:distribution, :with_items, item: item1, agency_rep: "A Person", organization: organization, issued_at: issued_at)
     end
 
     it "appears distribution in calendar with correct time & timezone" do
@@ -25,6 +27,10 @@ RSpec.feature "Distributions", type: :system do
   end
 
   context "When creating a new distribution manually" do
+    before do
+      user.add_role :distribution_creator, organization
+    end
+
     context "when the delivery_method is not shipped" do
       it "Allows a distribution to be created and shipping cost field not visible" do
         visit new_distribution_path
@@ -185,7 +191,7 @@ RSpec.feature "Distributions", type: :system do
   end
 
   context "With an existing distribution" do
-    let!(:distribution) { create(:distribution, :with_items, agency_rep: "A Person", delivery_method: delivery_method, organization: user.organization) }
+    let!(:distribution) { create(:distribution, :with_items, agency_rep: "A Person", delivery_method: delivery_method, organization: organization) }
     let(:delivery_method) { "pick_up" }
 
     before do
@@ -288,8 +294,8 @@ RSpec.feature "Distributions", type: :system do
 
   context "When attempting to edit a distribution" do
     context "after the distribution issued_at has passed or it has been marked complete" do
-      let!(:past_distribution) { create(:distribution, :with_items, agency_rep: "A Person", organization: user.organization, issued_at: Time.zone.yesterday, state: :scheduled) }
-      let!(:complete_distribution) { create(:distribution, :with_items, agency_rep: "A Person", organization: user.organization, issued_at: Time.zone.today, state: :complete) }
+      let!(:past_distribution) { create(:distribution, :with_items, agency_rep: "A Person", organization: organization, issued_at: Time.zone.yesterday, state: :scheduled) }
+      let!(:complete_distribution) { create(:distribution, :with_items, agency_rep: "A Person", organization: organization, issued_at: Time.zone.today, state: :complete) }
 
       it "does not contain a Edit button" do
         visit distributions_path
@@ -313,7 +319,7 @@ RSpec.feature "Distributions", type: :system do
         sign_in(organization_admin)
       end
 
-      let!(:distribution) { create(:distribution, :with_items, agency_rep: "A Person", organization: user.organization, issued_at: Time.zone.today.prev_day, state: :complete) }
+      let!(:distribution) { create(:distribution, :with_items, agency_rep: "A Person", organization: organization, issued_at: Time.zone.today.prev_day, state: :complete) }
 
       it "can click on Edit button and a warning appears " do
         visit distributions_path
@@ -334,9 +340,9 @@ RSpec.feature "Distributions", type: :system do
       item1 = create(:item, value_in_cents: 1050)
       item2 = create(:item)
       item3 = create(:item, value_in_cents: 100)
-      @distribution1 = create(:distribution, :with_items, item: item1, agency_rep: "A Person", organization: user.organization)
-      create(:distribution, :with_items, item: item2, agency_rep: "A Person", organization: user.organization)
-      @distribution3 = create(:distribution, :with_items, item: item3, agency_rep: "A Person", organization: user.organization)
+      @distribution1 = create(:distribution, :with_items, item: item1, agency_rep: "A Person", organization: organization)
+      create(:distribution, :with_items, item: item2, agency_rep: "A Person", organization: organization)
+      @distribution3 = create(:distribution, :with_items, item: item3, agency_rep: "A Person", organization: organization)
       visit distributions_path
     end
 
@@ -364,7 +370,7 @@ RSpec.feature "Distributions", type: :system do
   end
 
   context "When showing a individual distribution" do
-    let!(:distribution) { create(:distribution, :with_items, agency_rep: "A Person", organization: user.organization, issued_at: Time.zone.today, state: :complete, delivery_method: "pick_up") }
+    let!(:distribution) { create(:distribution, :with_items, agency_rep: "A Person", organization: organization, issued_at: Time.zone.today, state: :complete, delivery_method: "pick_up") }
 
     before { visit distribution_path(distribution.id) }
 
@@ -571,7 +577,7 @@ RSpec.feature "Distributions", type: :system do
 
     context "with fresh items" do
       let(:organization) { create(:organization) }
-      let(:user) { create(:user, organization: organization) }
+      let(:user) { create(:user) }
       let(:storage_location) { create(:storage_location, organization: organization) }
       let(:item_category) { create(:item_category, organization: organization) }
       let(:item1) { create(:item, name: "Good item", item_category: item_category, organization: organization) }
